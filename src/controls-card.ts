@@ -125,9 +125,7 @@ export class ControlsCard extends LitElement implements LovelaceCard {
             ? this._renderShutterButtons(group)
             : group.type === "actions"
               ? this._renderActions(group)
-              : group.type === "switches"
-                ? this._renderSwitches(group)
-                : nothing}
+              : nothing}
       </div>
     `;
   }
@@ -162,6 +160,11 @@ export class ControlsCard extends LitElement implements LovelaceCard {
     `;
   }
 
+  private _isSwitchDomain(entityId: string): boolean {
+    const domain = entityId.split(".")[0];
+    return ["switch", "light", "input_boolean", "fan"].includes(domain);
+  }
+
   private _renderActions(group: ControlGroup): TemplateResult {
     const style =
       group.columns != null
@@ -170,33 +173,20 @@ export class ControlsCard extends LitElement implements LovelaceCard {
 
     return html`
       <div class="actions-grid" style=${style}>
-        ${(group.entities ?? []).map(
-          (entity) => html`
-            <controls-action-button
-              .hass=${this.hass}
-              .config=${entity}
-            ></controls-action-button>
-          `
-        )}
-      </div>
-    `;
-  }
-
-  private _renderSwitches(group: ControlGroup): TemplateResult {
-    const style =
-      group.columns != null
-        ? `grid-template-columns: repeat(${group.columns}, 1fr)`
-        : "";
-
-    return html`
-      <div class="actions-grid" style=${style}>
-        ${(group.entities ?? []).map(
-          (entity) => html`
-            <controls-switch-button
-              .hass=${this.hass}
-              .config=${entity}
-            ></controls-switch-button>
-          `
+        ${(group.entities ?? []).map((entity) =>
+          this._isSwitchDomain(entity.entity)
+            ? html`
+                <controls-switch-button
+                  .hass=${this.hass}
+                  .config=${entity}
+                ></controls-switch-button>
+              `
+            : html`
+                <controls-action-button
+                  .hass=${this.hass}
+                  .config=${entity}
+                ></controls-action-button>
+              `
         )}
       </div>
     `;

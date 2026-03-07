@@ -20,9 +20,12 @@ export interface ControlsCardConfig extends LovelaceCardConfig {
 }
 
 /**
- * Group type — covers, shutter_buttons, actions, or switches
+ * Group type — covers, shutter_buttons, or actions
  */
-export type ControlGroupType = "covers" | "shutter_buttons" | "actions" | "switches";
+export type ControlGroupType = "covers" | "shutter_buttons" | "actions";
+
+/** Domains that render as toggle switches within an actions group */
+export const SWITCH_DOMAINS = ["switch", "light", "input_boolean", "fan"] as const;
 
 /**
  * A named group of control entities
