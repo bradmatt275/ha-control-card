@@ -90,9 +90,15 @@ export const cardStyles = css`
   /* ── Cover rows container ──────────────────────────────────── */
 
   .covers-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  @media (min-width: 600px) {
+    .covers-list {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 
   /* ── Actions grid ──────────────────────────────────────────── */
