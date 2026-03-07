@@ -300,3 +300,103 @@ export const actionButtonStyles = css`
     }
   }
 `;
+
+// ============================================================================
+// Switch Button Styles
+// ============================================================================
+
+export const switchButtonStyles = css`
+  ${cssVariables}
+
+  :host {
+    display: block;
+  }
+
+  .switch-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 12px;
+    background: var(--card-background-color);
+    border: 1px solid var(--divider-color);
+    border-radius: var(--controls-radius-row);
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .switch-button:hover {
+    background: rgba(var(--rgb-primary-color, 33, 150, 243), 0.12);
+  }
+
+  .switch-button:active {
+    background: rgba(var(--rgb-primary-color, 33, 150, 243), 0.2);
+  }
+
+  .switch-button.on {
+    border-color: var(--primary-color);
+  }
+
+  .switch-button.unavailable {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .switch-button.unavailable:hover {
+    background: var(--card-background-color);
+  }
+
+  .switch-button ha-icon {
+    --mdc-icon-size: 28px;
+    color: var(--secondary-text-color);
+    transition: color 150ms ease;
+  }
+
+  .switch-button.on ha-icon {
+    color: var(--primary-color);
+  }
+
+  .switch-button .label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--primary-text-color);
+    line-height: 1.3;
+    white-space: pre-line;
+  }
+
+  /* Toggle track */
+  .toggle-track {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--divider-color);
+    position: relative;
+    transition: background 200ms ease;
+    flex-shrink: 0;
+  }
+
+  .toggle-track.on {
+    background: var(--primary-color);
+  }
+
+  /* Toggle thumb */
+  .toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 200ms ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .toggle-track.on .toggle-thumb {
+    transform: translateX(16px);
+  }
+`;

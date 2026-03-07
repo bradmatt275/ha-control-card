@@ -20,9 +20,9 @@ export interface ControlsCardConfig extends LovelaceCardConfig {
 }
 
 /**
- * Group type — covers, shutter_buttons, or actions
+ * Group type — covers, shutter_buttons, actions, or switches
  */
-export type ControlGroupType = "covers" | "shutter_buttons" | "actions";
+export type ControlGroupType = "covers" | "shutter_buttons" | "actions" | "switches";
 
 /**
  * A named group of control entities
@@ -79,6 +79,17 @@ export interface ActionState {
   icon: string;
   domain: "script" | "input_button" | "button";
   triggered: boolean;
+}
+
+/**
+ * Runtime state for a switch entity
+ */
+export interface SwitchState {
+  entityId: string;
+  friendlyName: string;
+  icon: string;
+  domain: "switch" | "light" | "input_boolean" | "fan";
+  isOn: boolean;
 }
 
 // ============================================================================

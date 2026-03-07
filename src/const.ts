@@ -31,5 +31,8 @@ export const DEFAULT_SHUTTER_BUTTON_ICON = "mdi:blinds";
 /** Default icon for action entities when none is set */
 export const DEFAULT_ACTION_ICON = "mdi:gesture-tap-button";
 
+/** Default icon for switch entities when none is set */
+export const DEFAULT_SWITCH_ICON = "mdi:toggle-switch";
+
 /** Duration (ms) for the action-triggered animation */
 export const ACTION_TRIGGERED_DURATION = 500;

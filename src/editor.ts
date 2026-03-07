@@ -224,7 +224,9 @@ export class ControlsCardEditor
         ? ["cover"]
         : group.type === "shutter_buttons"
           ? ["script", "input_button", "button"]
-          : ["script", "input_button", "button"];
+          : group.type === "switches"
+            ? ["switch", "light", "input_boolean", "fan"]
+            : ["script", "input_button", "button"];
 
     return html`
       <div class="group-card">
@@ -273,6 +275,7 @@ export class ControlsCardEditor
                   { value: "covers", label: "Covers" },
                   { value: "shutter_buttons", label: "Shutter Buttons" },
                   { value: "actions", label: "Actions" },
+                  { value: "switches", label: "Switches" },
                 ],
                 mode: "dropdown",
               }}}
@@ -282,7 +285,7 @@ export class ControlsCardEditor
             ></ha-selector>
           </div>
 
-          ${group.type === "actions"
+          ${group.type === "actions" || group.type === "switches"
             ? html`
                 <div class="form-group">
                   <label>Columns (optional)</label>

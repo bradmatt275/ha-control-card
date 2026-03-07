@@ -15,6 +15,7 @@ import { cardStyles } from "./styles";
 import "./components/cover-row";
 import "./components/action-button";
 import "./components/shutter-button-row";
+import "./components/switch-button";
 
 // Import editor (side-effect)
 import "./editor";
@@ -124,7 +125,9 @@ export class ControlsCard extends LitElement implements LovelaceCard {
             ? this._renderShutterButtons(group)
             : group.type === "actions"
               ? this._renderActions(group)
-              : nothing}
+              : group.type === "switches"
+                ? this._renderSwitches(group)
+                : nothing}
       </div>
     `;
   }
@@ -173,6 +176,26 @@ export class ControlsCard extends LitElement implements LovelaceCard {
               .hass=${this.hass}
               .config=${entity}
             ></controls-action-button>
+          `
+        )}
+      </div>
+    `;
+  }
+
+  private _renderSwitches(group: ControlGroup): TemplateResult {
+    const style =
+      group.columns != null
+        ? `grid-template-columns: repeat(${group.columns}, 1fr)`
+        : "";
+
+    return html`
+      <div class="actions-grid" style=${style}>
+        ${(group.entities ?? []).map(
+          (entity) => html`
+            <controls-switch-button
+              .hass=${this.hass}
+              .config=${entity}
+            ></controls-switch-button>
           `
         )}
       </div>
