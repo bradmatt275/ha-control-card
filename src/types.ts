@@ -20,9 +20,9 @@ export interface ControlsCardConfig extends LovelaceCardConfig {
 }
 
 /**
- * Group type — covers (shutters/blinds) or actions (scripts/buttons)
+ * Group type — covers, shutter_buttons, or actions
  */
-export type ControlGroupType = "covers" | "actions";
+export type ControlGroupType = "covers" | "shutter_buttons" | "actions";
 
 /**
  * A named group of control entities
@@ -32,15 +32,27 @@ export interface ControlGroup {
   type: ControlGroupType;
   columns?: number;
   entities: ControlEntity[];
+  shutter_entities?: ShutterButtonEntity[];
 }
 
 /**
- * A single entity within a control group
+ * A single entity within a control group (covers / actions)
  */
 export interface ControlEntity {
   entity: string;
   name?: string;
   icon?: string;
+}
+
+/**
+ * A shutter controlled by 3 separate button entities (up / stop / down)
+ */
+export interface ShutterButtonEntity {
+  name: string;
+  icon?: string;
+  up_entity: string;
+  stop_entity: string;
+  down_entity: string;
 }
 
 // ============================================================================

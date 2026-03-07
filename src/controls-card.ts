@@ -14,6 +14,7 @@ import { cardStyles } from "./styles";
 // Import child components (side-effect)
 import "./components/cover-row";
 import "./components/action-button";
+import "./components/shutter-button-row";
 
 // Import editor (side-effect)
 import "./editor";
@@ -68,11 +69,20 @@ export class ControlsCard extends LitElement implements LovelaceCard {
 
     // Collect all entity IDs referenced in groups
     for (const group of this._config.groups) {
-      for (const entity of group.entities) {
+      // Standard entities (covers & actions)
+      for (const entity of (group.entities ?? [])) {
         if (
           oldHass.states[entity.entity] !== this.hass.states[entity.entity]
         ) {
           return true;
+        }
+      }
+      // Shutter button entities (3 per row)
+      for (const se of (group.shutter_entities ?? [])) {
+        for (const id of [se.up_entity, se.stop_entity, se.down_entity]) {
+          if (id && oldHass.states[id] !== this.hass.states[id]) {
+            return true;
+          }
         }
       }
     }
@@ -110,9 +120,11 @@ export class ControlsCard extends LitElement implements LovelaceCard {
         <div class="group-label">${group.name}</div>
         ${group.type === "covers"
           ? this._renderCovers(group)
-          : group.type === "actions"
-            ? this._renderActions(group)
-            : nothing}
+          : group.type === "shutter_buttons"
+            ? this._renderShutterButtons(group)
+            : group.type === "actions"
+              ? this._renderActions(group)
+              : nothing}
       </div>
     `;
   }
@@ -120,12 +132,27 @@ export class ControlsCard extends LitElement implements LovelaceCard {
   private _renderCovers(group: ControlGroup): TemplateResult {
     return html`
       <div class="covers-list">
-        ${group.entities.map(
+        ${(group.entities ?? []).map(
           (entity) => html`
             <controls-cover-row
               .hass=${this.hass}
               .config=${entity}
             ></controls-cover-row>
+          `
+        )}
+      </div>
+    `;
+  }
+
+  private _renderShutterButtons(group: ControlGroup): TemplateResult {
+    return html`
+      <div class="covers-list">
+        ${(group.shutter_entities ?? []).map(
+          (entity) => html`
+            <controls-shutter-button-row
+              .hass=${this.hass}
+              .config=${entity}
+            ></controls-shutter-button-row>
           `
         )}
       </div>
@@ -140,7 +167,7 @@ export class ControlsCard extends LitElement implements LovelaceCard {
 
     return html`
       <div class="actions-grid" style=${style}>
-        ${group.entities.map(
+        ${(group.entities ?? []).map(
           (entity) => html`
             <controls-action-button
               .hass=${this.hass}
@@ -165,7 +192,8 @@ export class ControlsCard extends LitElement implements LovelaceCard {
 
     for (const group of this._config.groups) {
       groupCount++;
-      totalEntities += group.entities.length;
+      totalEntities += (group.entities ?? []).length;
+      totalEntities += (group.shutter_entities ?? []).length;
     }
 
     return Math.ceil(totalEntities / 2) + groupCount + 1;

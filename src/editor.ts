@@ -11,7 +11,7 @@ import {
   fireEvent,
 } from "custom-card-helpers";
 
-import { ControlsCardConfig, ControlGroup, ControlEntity, ControlGroupType } from "./types";
+import { ControlsCardConfig, ControlGroup, ControlEntity, ControlGroupType, ShutterButtonEntity } from "./types";
 import { DEFAULT_TITLE, DEFAULT_ICON } from "./const";
 
 @customElement("controls-card-editor")
@@ -194,12 +194,13 @@ export class ControlsCardEditor
 
         <div class="form-group">
           <label>Icon</label>
-          <ha-textfield
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{ icon: {} }}
             .value=${this._config.icon ?? DEFAULT_ICON}
-            .placeholder=${DEFAULT_ICON}
-            @input=${(e: Event) =>
-              this._updateConfig("icon", (e.target as HTMLInputElement).value)}
-          ></ha-textfield>
+            @value-changed=${(e: CustomEvent) =>
+              this._updateConfig("icon", e.detail.value)}
+          ></ha-selector>
         </div>
 
         <!-- Groups -->
@@ -221,7 +222,9 @@ export class ControlsCardEditor
     const domainFilter =
       group.type === "covers"
         ? ["cover"]
-        : ["script", "input_button", "button"];
+        : group.type === "shutter_buttons"
+          ? ["script", "input_button", "button"]
+          : ["script", "input_button", "button"];
 
     return html`
       <div class="group-card">
@@ -268,6 +271,7 @@ export class ControlsCardEditor
               .selector=${{ select: {
                 options: [
                   { value: "covers", label: "Covers" },
+                  { value: "shutter_buttons", label: "Shutter Buttons" },
                   { value: "actions", label: "Actions" },
                 ],
                 mode: "dropdown",
@@ -300,14 +304,26 @@ export class ControlsCardEditor
             : nothing}
 
           <!-- Entities for this group -->
-          ${(group.entities ?? []).map((entity, ei) =>
-            this._renderEntity(entity, gi, ei, domainFilter)
-          )}
-
-          <div class="add-button" @click=${() => this._addEntity(gi)}>
-            <ha-icon icon="mdi:plus"></ha-icon>
-            Add Entity
-          </div>
+          ${group.type === "shutter_buttons"
+            ? html`
+                ${(group.shutter_entities ?? []).map((se, sei) =>
+                  this._renderShutterEntity(se, gi, sei, domainFilter)
+                )}
+                <div class="add-button" @click=${() => this._addShutterEntity(gi)}>
+                  <ha-icon icon="mdi:plus"></ha-icon>
+                  Add Shutter
+                </div>
+              `
+            : html`
+                ${(group.entities ?? []).map((entity, ei) =>
+                  this._renderEntity(entity, gi, ei, domainFilter)
+                )}
+                <div class="add-button" @click=${() => this._addEntity(gi)}>
+                  <ha-icon icon="mdi:plus"></ha-icon>
+                  Add Entity
+                </div>
+              `
+          }
         </div>
       </div>
     `;
@@ -377,12 +393,111 @@ export class ControlsCardEditor
 
           <div class="form-group">
             <label>Icon (optional)</label>
-            <ha-textfield
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ icon: {} }}
               .value=${entity.icon ?? ""}
-              placeholder="Use entity icon"
+              @value-changed=${(e: CustomEvent) =>
+                this._updateEntity(gi, ei, "icon", e.detail.value ?? "")}
+            ></ha-selector>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Shutter entity rendering ─────────────────────────────────────────────
+
+  private _renderShutterEntity(
+    entity: ShutterButtonEntity,
+    gi: number,
+    sei: number,
+    domainFilter: string[]
+  ): TemplateResult {
+    const shutterEntities = this._config.groups[gi].shutter_entities ?? [];
+
+    return html`
+      <div class="entity-item">
+        <div class="entity-item-header">
+          <span class="entity-item-title"
+            >Shutter ${sei + 1}${entity.name ? `: ${entity.name}` : ""}</span
+          >
+          <div class="item-actions">
+            <div
+              class="action-button ${sei === 0 ? "disabled" : ""}"
+              @click=${() => this._moveShutterEntityUp(gi, sei)}
+              title="Move up"
+            >
+              <ha-icon icon="mdi:arrow-up"></ha-icon>
+            </div>
+            <div
+              class="action-button ${sei === shutterEntities.length - 1 ? "disabled" : ""}"
+              @click=${() => this._moveShutterEntityDown(gi, sei)}
+              title="Move down"
+            >
+              <ha-icon icon="mdi:arrow-down"></ha-icon>
+            </div>
+            <ha-icon
+              class="remove-button"
+              icon="mdi:delete"
+              @click=${() => this._removeShutterEntity(gi, sei)}
+              title="Remove shutter"
+            ></ha-icon>
+          </div>
+        </div>
+
+        <div class="entity-item-content">
+          <div class="form-group">
+            <label>Name</label>
+            <ha-textfield
+              .value=${entity.name ?? ""}
               @input=${(e: Event) =>
-                this._updateEntity(gi, ei, "icon", (e.target as HTMLInputElement).value)}
+                this._updateShutterEntity(gi, sei, "name", (e.target as HTMLInputElement).value)}
             ></ha-textfield>
+          </div>
+
+          <div class="form-group">
+            <label>Icon (optional)</label>
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ icon: {} }}
+              .value=${entity.icon ?? ""}
+              @value-changed=${(e: CustomEvent) =>
+                this._updateShutterEntity(gi, sei, "icon", e.detail.value ?? "")}
+            ></ha-selector>
+          </div>
+
+          <div class="form-group">
+            <label>Up Entity</label>
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ entity: { domain: domainFilter } }}
+              .value=${entity.up_entity ?? ""}
+              @value-changed=${(e: CustomEvent) =>
+                this._updateShutterEntity(gi, sei, "up_entity", e.detail.value ?? "")}
+            ></ha-selector>
+          </div>
+
+          <div class="form-group">
+            <label>Stop Entity</label>
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ entity: { domain: domainFilter } }}
+              .value=${entity.stop_entity ?? ""}
+              @value-changed=${(e: CustomEvent) =>
+                this._updateShutterEntity(gi, sei, "stop_entity", e.detail.value ?? "")}
+            ></ha-selector>
+          </div>
+
+          <div class="form-group">
+            <label>Down Entity</label>
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ entity: { domain: domainFilter } }}
+              .value=${entity.down_entity ?? ""}
+              @value-changed=${(e: CustomEvent) =>
+                this._updateShutterEntity(gi, sei, "down_entity", e.detail.value ?? "")}
+            ></ha-selector>
           </div>
         </div>
       </div>
@@ -515,6 +630,72 @@ export class ControlsCardEditor
       entities[entityIndex],
     ];
     groups[groupIndex] = { ...groups[groupIndex], entities };
+    this._fireChanged({ ...this._config, groups });
+  }
+
+  // ── Shutter Entity CRUD ──────────────────────────────────────────────────
+
+  private _addShutterEntity(groupIndex: number): void {
+    const groups = [...(this._config.groups ?? [])];
+    const shutter_entities = [...(groups[groupIndex].shutter_entities ?? [])];
+    shutter_entities.push({
+      name: `Shutter ${shutter_entities.length + 1}`,
+      up_entity: "",
+      stop_entity: "",
+      down_entity: "",
+    });
+    groups[groupIndex] = { ...groups[groupIndex], shutter_entities };
+    this._fireChanged({ ...this._config, groups });
+  }
+
+  private _removeShutterEntity(groupIndex: number, entityIndex: number): void {
+    const groups = [...(this._config.groups ?? [])];
+    const shutter_entities = [...(groups[groupIndex].shutter_entities ?? [])];
+    shutter_entities.splice(entityIndex, 1);
+    groups[groupIndex] = { ...groups[groupIndex], shutter_entities };
+    this._fireChanged({ ...this._config, groups });
+  }
+
+  private _updateShutterEntity(
+    groupIndex: number,
+    entityIndex: number,
+    field: keyof ShutterButtonEntity,
+    value: string
+  ): void {
+    const groups = [...(this._config.groups ?? [])];
+    const shutter_entities = [...(groups[groupIndex].shutter_entities ?? [])];
+    shutter_entities[entityIndex] = { ...shutter_entities[entityIndex], [field]: value };
+
+    // Remove empty optional icon field
+    if (field === "icon" && !value) {
+      delete (shutter_entities[entityIndex] as unknown as Record<string, unknown>)[field];
+    }
+
+    groups[groupIndex] = { ...groups[groupIndex], shutter_entities };
+    this._fireChanged({ ...this._config, groups });
+  }
+
+  private _moveShutterEntityUp(groupIndex: number, entityIndex: number): void {
+    if (entityIndex === 0) return;
+    const groups = [...(this._config.groups ?? [])];
+    const shutter_entities = [...(groups[groupIndex].shutter_entities ?? [])];
+    [shutter_entities[entityIndex - 1], shutter_entities[entityIndex]] = [
+      shutter_entities[entityIndex],
+      shutter_entities[entityIndex - 1],
+    ];
+    groups[groupIndex] = { ...groups[groupIndex], shutter_entities };
+    this._fireChanged({ ...this._config, groups });
+  }
+
+  private _moveShutterEntityDown(groupIndex: number, entityIndex: number): void {
+    const groups = [...(this._config.groups ?? [])];
+    const shutter_entities = [...(groups[groupIndex].shutter_entities ?? [])];
+    if (entityIndex >= shutter_entities.length - 1) return;
+    [shutter_entities[entityIndex], shutter_entities[entityIndex + 1]] = [
+      shutter_entities[entityIndex + 1],
+      shutter_entities[entityIndex],
+    ];
+    groups[groupIndex] = { ...groups[groupIndex], shutter_entities };
     this._fireChanged({ ...this._config, groups });
   }
 }

@@ -25,6 +25,9 @@ export const DEFAULT_ICON = "mdi:tune";
 /** Default icon for cover entities when none is set */
 export const DEFAULT_COVER_ICON = "mdi:blinds";
 
+/** Default icon for shutter button entities when none is set */
+export const DEFAULT_SHUTTER_BUTTON_ICON = "mdi:blinds";
+
 /** Default icon for action entities when none is set */
 export const DEFAULT_ACTION_ICON = "mdi:gesture-tap-button";
 
