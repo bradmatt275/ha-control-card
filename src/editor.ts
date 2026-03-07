@@ -263,15 +263,19 @@ export class ControlsCardEditor
 
           <div class="form-group">
             <label>Type</label>
-            <ha-select
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ select: {
+                options: [
+                  { value: "covers", label: "Covers" },
+                  { value: "actions", label: "Actions" },
+                ],
+                mode: "dropdown",
+              }}}
               .value=${group.type ?? "covers"}
-              @selected=${(e: Event) =>
-                this._updateGroup(gi, "type", (e.target as HTMLSelectElement).value as ControlGroupType)}
-              @closed=${(e: Event) => e.stopPropagation()}
-            >
-              <mwc-list-item value="covers">Covers</mwc-list-item>
-              <mwc-list-item value="actions">Actions</mwc-list-item>
-            </ha-select>
+              @value-changed=${(e: CustomEvent) =>
+                this._updateGroup(gi, "type", e.detail.value as ControlGroupType)}
+            ></ha-selector>
           </div>
 
           ${group.type === "actions"
@@ -352,14 +356,13 @@ export class ControlsCardEditor
         <div class="entity-item-content">
           <div class="form-group">
             <label>Entity</label>
-            <ha-entity-picker
+            <ha-selector
               .hass=${this.hass}
+              .selector=${{ entity: { domain: domainFilter } }}
               .value=${entity.entity ?? ""}
-              .includeDomains=${domainFilter}
-              allow-custom-entity
               @value-changed=${(e: CustomEvent) =>
                 this._updateEntity(gi, ei, "entity", e.detail.value ?? "")}
-            ></ha-entity-picker>
+            ></ha-selector>
           </div>
 
           <div class="form-group">
