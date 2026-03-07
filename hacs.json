@@ -1,0 +1,6 @@
+{
+  "name": "Controls Card",
+  "render_readme": true,
+  "homeassistant": "2023.0.0",
+  "filename": "controls-card.js"
+}
