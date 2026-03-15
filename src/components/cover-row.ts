@@ -5,7 +5,7 @@
 
 import { LitElement, html, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { HomeAssistant } from "custom-card-helpers";
+import { HomeAssistant, forwardHaptic } from "custom-card-helpers";
 
 import { ControlEntity } from "../types";
 import { DEFAULT_COVER_ICON } from "../const";
@@ -79,6 +79,8 @@ export class ControlsCoverRow extends LitElement {
     this.hass.callService("cover", service, {
       entity_id: this.config.entity,
     });
+
+    forwardHaptic("light");
   }
 
   protected render(): TemplateResult {

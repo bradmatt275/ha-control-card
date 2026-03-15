@@ -7,7 +7,7 @@
 
 import { LitElement, html, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { HomeAssistant } from "custom-card-helpers";
+import { HomeAssistant, forwardHaptic } from "custom-card-helpers";
 
 import { ShutterButtonEntity } from "../types";
 import { DEFAULT_SHUTTER_BUTTON_ICON } from "../const";
@@ -54,6 +54,8 @@ export class ControlsShutterButtonRow extends LitElement {
     this.hass.callService(domain, service, {
       entity_id: entityId,
     });
+
+    forwardHaptic("light");
   }
 
   protected render(): TemplateResult {

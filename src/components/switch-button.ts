@@ -5,7 +5,7 @@
 
 import { LitElement, html, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { HomeAssistant } from "custom-card-helpers";
+import { HomeAssistant, forwardHaptic } from "custom-card-helpers";
 
 import { ControlEntity } from "../types";
 import { DEFAULT_SWITCH_ICON } from "../const";
@@ -67,6 +67,8 @@ export class ControlsSwitchButton extends LitElement {
     this.hass.callService(domain, service, {
       entity_id: this.config.entity,
     });
+
+    forwardHaptic("light");
   }
 
   protected render(): TemplateResult {

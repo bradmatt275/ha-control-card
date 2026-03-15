@@ -5,7 +5,7 @@
 
 import { LitElement, html, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { HomeAssistant } from "custom-card-helpers";
+import { HomeAssistant, forwardHaptic } from "custom-card-helpers";
 
 import { ControlEntity } from "../types";
 import { DEFAULT_ACTION_ICON, ACTION_TRIGGERED_DURATION } from "../const";
@@ -61,6 +61,8 @@ export class ControlsActionButton extends LitElement {
     this.hass.callService(domain, service, {
       entity_id: this.config.entity,
     });
+
+    forwardHaptic("light");
 
     // Trigger the pulse animation
     this._triggered = true;
